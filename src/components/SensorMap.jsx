@@ -143,7 +143,7 @@ export default function SensorMap({ sensors, selectedSensorId, onSelectSensor })
   return (
     <div className="map-section fade-in">
       <div className="section-header">
-        <div className="section-title">Sensor Network Map</div>
+        <div className="section-title">Sensor Location</div>
         <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--aqi-good)', display: 'inline-block' }} />
           Good

@@ -60,7 +60,7 @@ export default function TrendsChart() {
       <div className="chart-header">
         <div>
           <div className="chart-title">Historical Air Quality Trends</div>
-          <div className="chart-subtitle">AQI and pollutant levels over time — Downtown Central</div>
+          <div className="chart-subtitle">AQI and pollutant levels over time</div>
         </div>
 
         {/* Time range selector */}

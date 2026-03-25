@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import AQIGauge from './components/AQIGauge';
 import PollutantCard from './components/PollutantCard';
-import TrendsChart from './components/TrendsChart';
-import SensorMap from './components/SensorMap';
 import { useAutoRefresh, useParticles } from './hooks/useAirQuality';
 import { SENSORS, getAQILevel, AQI_LEVELS } from './data/mockData';
 
@@ -29,10 +27,7 @@ export default function App() {
     setSelectedSensorId(id);
   }, []);
 
-  // Stats: averages across all sensors
-  const avgAQI = Math.round(sensors.reduce((a, s) => a + s.aqi, 0) / sensors.length);
-  const maxAQI = Math.max(...sensors.map(s => s.aqi));
-  const minAQI = Math.min(...sensors.map(s => s.aqi));
+  // With a single node, cross-network stats are no longer needed.
 
   return (
     <div className="app-layout">
@@ -58,10 +53,8 @@ export default function App() {
               ☰
             </button>
             <div className="topbar-title">
-              {activeView === 'overview' && <>Air Quality Overview<span>Downtown Central</span></>}
+              {activeView === 'overview' && <>Air Quality Overview</>}
               {activeView === 'pollutants' && 'Pollutant Breakdown'}
-              {activeView === 'trends' && 'Historical Trends'}
-              {activeView === 'map' && 'Sensor Network Map'}
             </div>
           </div>
 
@@ -142,89 +135,25 @@ export default function App() {
 
                 {/* Stats column */}
                 <div className="stats-column">
-                  {/* Mini stat cards */}
-                  <div className="stat-mini-row">
-                    <div className="stat-mini">
-                      <div className="stat-mini-label">Network Avg AQI</div>
-                      <div className="stat-mini-value">{avgAQI}</div>
-                      <div className="stat-mini-change neutral">Across 6 sensors</div>
-                    </div>
-                    <div className="stat-mini">
-                      <div className="stat-mini-label">Peak AQI</div>
-                      <div className="stat-mini-value" style={{ color: 'var(--aqi-unhealthy)' }}>{maxAQI}</div>
-                      <div className="stat-mini-change up">▲ N. Industrial</div>
-                    </div>
-                    <div className="stat-mini">
-                      <div className="stat-mini-label">Lowest AQI</div>
-                      <div className="stat-mini-value" style={{ color: 'var(--aqi-good)' }}>{minAQI}</div>
-                      <div className="stat-mini-change down">▼ Green Park</div>
-                    </div>
-                  </div>
+                  {/* Network stats removed since we now use a single real sensor */}
 
-                  {/* Quick sensor overview */}
-                  <div className="card" style={{ flex: 1 }}>
-                    <div className="card-header">
-                      <div className="card-title">All Sensors Overview</div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Live</span>
+                  {/* Pollutant Breakdown in Overview */}
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', marginTop: '16px' }}>
+                    <div className="section-header" style={{ marginBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div className="section-title">Pollutant Breakdown</div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {sensors.map(s => {
-                        const lvl = getAQILevel(s.aqi);
-                        const col = AQI_LEVELS[lvl]?.color;
-                        const pct = Math.min(s.aqi / 300, 1) * 100;
-                        return (
-                          <div
-                            key={s.id}
-                            onClick={() => handleSelectSensor(s.id)}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '10px',
-                              cursor: 'pointer',
-                              padding: '6px 8px',
-                              borderRadius: 'var(--radius-sm)',
-                              background: s.id === selectedSensorId ? 'var(--bg-elevated)' : 'transparent',
-                              transition: 'background 0.15s',
-                            }}
-                          >
-                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: col, flexShrink: 0, boxShadow: `0 0 6px ${col}55` }} />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {s.name}
-                              </div>
-                              <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 999, marginTop: 4, overflow: 'hidden' }}>
-                                <div style={{ height: '100%', width: `${pct}%`, background: col, borderRadius: 999, transition: 'width 0.8s' }} />
-                              </div>
-                            </div>
-                            <div style={{ fontFamily: 'Space Grotesk', fontWeight: 700, fontSize: '0.95rem', color: col, flexShrink: 0 }}>
-                              {s.aqi}
-                            </div>
-                          </div>
-                        );
-                      })}
+                    <div className="pollutants-grid" style={{ marginBottom: 0 }}>
+                      {Object.entries(selectedSensor.pollutants).map(([key, val]) => (
+                        <PollutantCard key={key} pollutant={key} value={val} />
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Pollutant cards */}
-              <div className="section-header">
-                <div className="section-title">Pollutant Breakdown</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                  {selectedSensor.name} · WHO/EPA thresholds
-                </div>
-              </div>
-              <div className="pollutants-grid">
-                {Object.entries(selectedSensor.pollutants).map(([key, val]) => (
-                  <PollutantCard key={key} pollutant={key} value={val} />
-                ))}
-              </div>
 
-              {/* Trends chart */}
-              <div className="section-header">
-                <div className="section-title">Historical Trends</div>
-              </div>
-              <TrendsChart />
+
+
             </div>
           )}
 
@@ -233,9 +162,6 @@ export default function App() {
             <div className="fade-in">
               <div className="section-header">
                 <div className="section-title">Full Pollutant Analysis</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                  {selectedSensor.name} · WHO/EPA guidance
-                </div>
               </div>
 
               <div className="pollutants-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))' }}>
@@ -264,10 +190,10 @@ export default function App() {
                       {[
                         { key: 'pm25', name: 'PM2.5', safe: 15, unit: 'µg/m³', risk: 'Cardiovascular & respiratory' },
                         { key: 'pm10', name: 'PM10', safe: 45, unit: 'µg/m³', risk: 'Respiratory tract damage' },
-                        { key: 'no2', name: 'NO₂', safe: 25, unit: 'µg/m³', risk: 'Airway inflammation' },
-                        { key: 'o3', name: 'O₃', safe: 100, unit: 'µg/m³', risk: 'Lung function reduction' },
-                        { key: 'so2', name: 'SO₂', safe: 40, unit: 'µg/m³', risk: 'Bronchospasm' },
-                        { key: 'co2', name: 'CO₂', safe: 1000, unit: 'ppm', risk: 'Cognitive impairment' },
+                        { key: 'no2', name: 'mq2', safe: 25, unit: 'µg/m³', risk: 'Airway inflammation' },
+                        { key: 'o3', name: 'temperature', safe: 100, unit: '°C', risk: 'Heat exhaustion' },
+                        { key: 'so2', name: 'humidity', safe: 40, unit: '%', risk: 'Discomfort' },
+                        { key: 'co2', name: 'mq135', safe: 1000, unit: 'ppm', risk: 'Cognitive impairment' },
                       ].map(row => {
                         const val = selectedSensor.pollutants[row.key];
                         const pct = val / row.safe;
@@ -300,21 +226,7 @@ export default function App() {
             </div>
           )}
 
-          {/* ========== TRENDS VIEW ========== */}
-          {activeView === 'trends' && (
-            <div className="fade-in">
-              <TrendsChart />
-            </div>
-          )}
 
-          {/* ========== MAP VIEW ========== */}
-          {activeView === 'map' && (
-            <SensorMap
-              sensors={sensors}
-              selectedSensorId={selectedSensorId}
-              onSelectSensor={handleSelectSensor}
-            />
-          )}
         </div>
       </main>
     </div>

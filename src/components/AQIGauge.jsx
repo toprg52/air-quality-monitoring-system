@@ -42,7 +42,7 @@ export default function AQIGauge({ aqi, sensorName, lastUpdated }) {
 
   return (
     <div className="aqi-panel fade-in" style={{ '--aqi-color': levelData.color }}>
-      <div className="aqi-location">📍 {sensorName}</div>
+
 
       {/* Gauge SVG */}
       <div className="aqi-gauge-container">

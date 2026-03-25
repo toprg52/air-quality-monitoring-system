@@ -21,10 +21,10 @@ export const HEALTH_RECOMMENDATIONS = {
 export const WHO_THRESHOLDS = {
   pm25: { safe: 15, unit: 'µg/m³', name: 'PM2.5', fullName: 'Fine Particulate Matter' },
   pm10: { safe: 45, unit: 'µg/m³', name: 'PM10', fullName: 'Coarse Particulate Matter' },
-  co2: { safe: 1000, unit: 'ppm', name: 'CO₂', fullName: 'Carbon Dioxide' },
-  no2: { safe: 25, unit: 'µg/m³', name: 'NO₂', fullName: 'Nitrogen Dioxide' },
-  o3: { safe: 100, unit: 'µg/m³', name: 'O₃', fullName: 'Ozone' },
-  so2: { safe: 40, unit: 'µg/m³', name: 'SO₂', fullName: 'Sulfur Dioxide' },
+  co2: { safe: 1000, unit: 'ppm', name: 'mq135', fullName: 'mq135 Sensor' },
+  no2: { safe: 25, unit: 'µg/m³', name: 'mq2', fullName: 'mq2 Sensor' },
+  o3: { safe: 100, unit: '°C', name: 'temperature', fullName: 'Temperature' },
+  so2: { safe: 40, unit: '%', name: 'humidity', fullName: 'Humidity' },
 };
 
 export const getAQILevel = (aqi) => {
@@ -40,115 +40,22 @@ export const getAQILevel = (aqi) => {
 export const SENSORS = [
   {
     id: 'sensor-001',
-    name: 'Downtown Central',
-    location: 'Central Business District',
+    name: 'Live Station',
+    location: 'Real-time Firebase Sensor',
     lat: 28.6139,
-    lng: 77.2090,
-    aqi: 142,
-    pollutants: { pm25: 38.4, pm10: 72.1, co2: 820, no2: 48.3, o3: 89.2, so2: 22.1 },
-    lastUpdated: new Date(Date.now() - 2 * 60000).toISOString(),
-  },
-  {
-    id: 'sensor-002',
-    name: 'North Industrial Zone',
-    location: 'Industrial Area, Sector 12',
-    lat: 28.6639,
-    lng: 77.2390,
-    aqi: 218,
-    pollutants: { pm25: 88.2, pm10: 142.5, co2: 1450, no2: 112.4, o3: 72.1, so2: 89.3 },
-    lastUpdated: new Date(Date.now() - 4 * 60000).toISOString(),
-  },
-  {
-    id: 'sensor-003',
-    name: 'Green Park Residential',
-    location: 'Green Park, South Delhi',
-    lat: 28.5594,
-    lng: 77.2059,
-    aqi: 62,
-    pollutants: { pm25: 14.2, pm10: 28.7, co2: 520, no2: 18.4, o3: 55.3, so2: 8.2 },
-    lastUpdated: new Date(Date.now() - 1 * 60000).toISOString(),
-  },
-  {
-    id: 'sensor-004',
-    name: 'East Highway Monitor',
-    location: 'NH-58 Highway Junction',
-    lat: 28.6339,
-    lng: 77.3090,
-    aqi: 176,
-    pollutants: { pm25: 62.1, pm10: 98.4, co2: 980, no2: 84.2, o3: 102.3, so2: 45.6 },
-    lastUpdated: new Date(Date.now() - 3 * 60000).toISOString(),
-  },
-  {
-    id: 'sensor-005',
-    name: 'University Campus',
-    location: 'JNU Campus, South-West',
-    lat: 28.5400,
-    lng: 77.1672,
-    aqi: 88,
-    pollutants: { pm25: 22.1, pm10: 41.3, co2: 640, no2: 28.7, o3: 68.4, so2: 12.1 },
-    lastUpdated: new Date(Date.now() - 5 * 60000).toISOString(),
-  },
-  {
-    id: 'sensor-006',
-    name: 'Airport Terminal',
-    location: 'Indira Gandhi International Airport',
-    lat: 28.5562,
-    lng: 77.1000,
-    aqi: 155,
-    pollutants: { pm25: 52.3, pm10: 88.6, co2: 890, no2: 72.1, o3: 78.9, so2: 38.4 },
-    lastUpdated: new Date(Date.now() - 6 * 60000).toISOString(),
-  },
+    lng: 77.2090, // keep generic coords or the same
+    aqi: 50,
+    pollutants: { pm25: 0, pm10: 0, co2: 0, no2: 0, o3: 0, so2: 0 },
+    lastUpdated: new Date().toISOString(),
+  }
 ];
 
 // Primary sensor (currently selected)
 export const PRIMARY_SENSOR_ID = 'sensor-001';
 
-// Generate historical data for charts
-const generateHistoricalData = (hours, baseAQI, variance) => {
-  const data = [];
-  const now = Date.now();
-  for (let i = hours; i >= 0; i--) {
-    const ts = now - i * 3600000;
-    const timeOfDay = new Date(ts).getHours();
-    // Simulate higher pollution during rush hours
-    const rushModifier = (timeOfDay >= 7 && timeOfDay <= 9) || (timeOfDay >= 17 && timeOfDay <= 20) ? 1.4 : 0.8;
-    const aqi = Math.round(Math.max(20, baseAQI * rushModifier + (Math.random() - 0.5) * variance));
-
-    data.push({
-      timestamp: ts,
-      time: new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      date: new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      label: hours <= 24
-        ? new Date(ts).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-        : new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      aqi,
-      pm25: Math.round(Math.max(5, (aqi * 0.27 + (Math.random() - 0.5) * 8) * 10) / 10),
-      pm10: Math.round(Math.max(10, (aqi * 0.5 + (Math.random() - 0.5) * 12) * 10) / 10),
-      no2: Math.round(Math.max(5, (aqi * 0.34 + (Math.random() - 0.5) * 10) * 10) / 10),
-      o3: Math.round(Math.max(15, (aqi * 0.62 + (Math.random() - 0.5) * 15) * 10) / 10),
-    });
-  }
-  return data;
-};
-
 export const HISTORICAL_DATA = {
-  '24h': generateHistoricalData(24, 142, 40),
-  '7d': generateHistoricalData(168, 138, 50).filter((_, i) => i % 6 === 0),
-  '30d': generateHistoricalData(720, 135, 60).filter((_, i) => i % 24 === 0),
+  '24h': [],
+  '7d': [],
+  '30d': [],
 };
 
-// Simulate data variation for auto-refresh
-export const generateVariant = (sensor, delta = 0) => {
-  const factor = 1 + (Math.random() - 0.5) * 0.08 + delta * 0.001;
-  const newPollutants = {};
-  Object.entries(sensor.pollutants).forEach(([key, val]) => {
-    newPollutants[key] = Math.round(Math.max(1, val * factor) * 10) / 10;
-  });
-  const newAQI = Math.round(Math.max(10, Math.min(500, sensor.aqi * factor)));
-  return {
-    ...sensor,
-    aqi: newAQI,
-    pollutants: newPollutants,
-    lastUpdated: new Date().toISOString(),
-  };
-};

@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { SENSORS, generateVariant } from '../data/mockData';
+import { SENSORS } from '../data/mockData';
+
+const FIREBASE_URL = 'https://air-quality-monitor-83ae8-default-rtdb.firebaseio.com/air_quality.json';
 
 /**
- * useAutoRefresh — simulates live data updates every 30 seconds
+ * useAutoRefresh — fetches live data every 30 seconds
  */
 export function useAutoRefresh(initialSensors, intervalMs = 30000) {
   const [sensors, setSensors] = useState(initialSensors);
@@ -11,14 +13,45 @@ export function useAutoRefresh(initialSensors, intervalMs = 30000) {
   const intervalRef = useRef(null);
   const countdownRef = useRef(null);
 
-  const refresh = useCallback(() => {
+  const refresh = useCallback(async () => {
     setIsRefreshing(true);
-    setSensors(prev => prev.map(s => generateVariant(s)));
-    setCountdown(intervalMs / 1000);
-    setTimeout(() => setIsRefreshing(false), 800);
+    try {
+      const res = await fetch(FIREBASE_URL);
+      const data = await res.json();
+      
+      setSensors(prev => prev.map((s, idx) => {
+        // We now only have one real sensor in the array, so just update it
+        if (data) {
+          const pm25 = data.pm25 || 0;
+          const aqi = Math.min(500, Math.round(pm25 * 2.5)) || 50; 
+          
+          return {
+            ...s,
+            aqi: aqi,
+            pollutants: {
+              pm25: data.pm25 || 0,
+              pm10: data.pm10 || 0,
+              co2: data.mq135 || 0,
+              no2: data.mq2 || 0,
+              o3: data.temperature || data.temp || 0,
+              so2: data.humidity || 0
+            },
+            lastUpdated: new Date().toISOString(),
+          };
+        }
+        return s;
+      }));
+    } catch (err) {
+      console.error("Error fetching Firebase data", err);
+      // On error, keep existing data
+    } finally {
+      setCountdown(intervalMs / 1000);
+      setTimeout(() => setIsRefreshing(false), 800);
+    }
   }, [intervalMs]);
 
   useEffect(() => {
+    refresh(); // initial fetch
     intervalRef.current = setInterval(refresh, intervalMs);
     countdownRef.current = setInterval(() => {
       setCountdown(prev => (prev <= 1 ? intervalMs / 1000 : prev - 1));
