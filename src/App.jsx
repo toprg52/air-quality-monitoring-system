@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import AQIGauge from './components/AQIGauge';
 import PollutantCard from './components/PollutantCard';
+import BangaloreMap from './components/BangaloreMap';
 import { useAutoRefresh, useParticles } from './hooks/useAirQuality';
 import { SENSORS, getAQILevel, AQI_LEVELS } from './data/mockData';
 
@@ -150,10 +151,8 @@ export default function App() {
                   </div>
                 </div>
               </div>
-
-
-
-
+              {/* Bangalore Map Comparison */}
+              <BangaloreMap />
             </div>
           )}
 
