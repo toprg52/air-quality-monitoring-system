@@ -31,12 +31,30 @@ export default function BangaloreMap() {
     const FIREBASE_URL = 'https://air-quality-monitor-83ae8-default-rtdb.firebaseio.com/air_quality.json';
 
     // Provided calculation logic
-    function calculateAQI(pm25) {
-      if (pm25 <= 12) return { value: 50, label: "Good", color: "green" };
-      else if (pm25 <= 35) return { value: 100, label: "Moderate", color: "yellow" };
-      else if (pm25 <= 55) return { value: 150, label: "Unhealthy (Sensitive)", color: "orange" };
-      else return { value: 200, label: "Unhealthy", color: "red" };
-    }
+   function calculateAQI(pm25) {
+
+  if (pm25 === undefined || pm25 === null) {
+    return { value: 0, label: "No Data", color: "gray" };
+  }
+
+  const value = Math.min(500, Math.round(pm25 * 2.5));
+
+  let label = "Good";
+  let color = "green";
+
+  if (value > 150) {
+    label = "Unhealthy";
+    color = "red";
+  } else if (value > 100) {
+    label = "Unhealthy (Sensitive)";
+    color = "orange";
+  } else if (value > 50) {
+    label = "Moderate";
+    color = "yellow";
+  }
+
+  return { value, label, color };
+}
 
     function getAQIColor(val) {
       if (val < 50) return "green";
