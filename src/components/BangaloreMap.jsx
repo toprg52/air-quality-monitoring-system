@@ -89,17 +89,21 @@ export default function BangaloreMap() {
         if (data && data.pm25 !== undefined) {
           const aqiData = calculateAQI(data.pm25);
           // Placing red marker as requested by user
-          createMarker(12.9716, 77.5946, "Our Sensor (MIT BLR)", aqiData.value, aqiData.label, "red");
+          createMarker(12.9716, 77.5946, "Our Sensor (MIT BLR)", aqiData.value, aqiData.label, aqiData.color);
         }
       }).catch(e => console.error("Firebase fetch failed", e));
 
     // 2. WAQI Network Stations
     const stations = [
-        'bangalore',
-        'bangalore-silk-board',
-        'bangalore-hebbal',
-        'bangalore-jayanagar'
-    ];
+  'bangalore',
+  'bangalore-silk-board',
+  'bangalore-hebbal',
+  'bangalore-jayanagar',
+  'bangalore-btm',
+  'bangalore-whitefield',
+  'bangalore-koramangala',
+  'bangalore-indiranagar'
+];
 
     stations.forEach(station => {
       fetch(`https://api.waqi.info/feed/${station}/?token=${KEY}`)
@@ -109,7 +113,7 @@ export default function BangaloreMap() {
                 const d = resData.data;
                 const aqi = d.aqi;
                 const color = getAQIColor(aqi);
-                const status = aqi < 50 ? "Good" : aqi < 100 ? "Moderate" : aqi < 150 ? "Unhealthy (Sensitive)" : "Unhealthy";
+                const aqiData = calculateAQI(d.aqi);
                 createMarker(d.city.geo[0], d.city.geo[1], d.city.name, aqi, status, color);
             }
         }).catch(e => console.error(`WAQI fetch failed for ${station}`, e));
