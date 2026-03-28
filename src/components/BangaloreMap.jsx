@@ -94,15 +94,12 @@ export default function BangaloreMap() {
       }).catch(e => console.error("Firebase fetch failed", e));
 
     // 2. WAQI Network Stations
-    const stations = [
+   const stations = [
   'bangalore',
-  'bangalore-silk-board',
-  'bangalore-hebbal',
-  'bangalore-jayanagar',
-  'bangalore-btm',
-  'bangalore-whitefield',
-  'bangalore-koramangala',
-  'bangalore-indiranagar'
+  'delhi',
+  'mumbai',
+  'chennai',
+  'kolkata'
 ];
 
     stations.forEach(station => {
