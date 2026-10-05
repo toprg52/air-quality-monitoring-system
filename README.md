@@ -359,4 +359,4 @@ AirWatch started as a simple idea: collect air-quality data using inexpensive se
 Building it taught us that the difficult part of an IoT system is not any single component. It is making the hardware, data, cloud services, application, and user interface work together reliably.
 
 This repository represents the first phase of the project, with future improvements planned around data validation, better sensing, anomaly detection, and machine-learning-based analysis.
-
+<!-- Contributed by Varsha -->
